@@ -137,6 +137,27 @@
         <item name="android:layout_marginEnd">@dimen/card_main_layout_view_margin_end</item>
     </style>
 
+    <!-- Style for Main Layout kitkat-->
+    <style name="card.main_layout.kitkat">
+        <item name="android:background">@drawable/card_kitkat_selector</item>
+    </style>
+
+    <!-- Style for Main Layout with foreground selector-->
+    <style name="card.main_layout_foreground">
+        <item name="android:background">@drawable/card_background</item>
+        <item name="android:foreground">@drawable/card_foreground_selector</item>
+        <item name="android:layout_marginTop">@dimen/card_main_layout_view_margin_top</item>
+        <item name="android:layout_marginBottom">@dimen/card_main_layout_view_margin_bottom</item>
+        <item name="android:layout_marginStart">@dimen/card_main_layout_view_margin_start</item>
+        <item name="android:layout_marginEnd">@dimen/card_main_layout_view_margin_end</item>
+    </style>
+
+    <!-- Style for Main Layout with foreground selector kitkat-->
+    <style name="card.main_layout_foreground.kitkat">
+        <item name="android:foreground">@drawable/card_foreground_kitkat_selector</item>
+    </style>
+
+
     <!-- Style for Hidden Expand Layout ****************************************-->
 
     <style name="card.main_contentExpand">

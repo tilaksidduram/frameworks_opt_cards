@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.cards.internal.base.BaseCard;
+import com.android.cards.view.component.CardThumbnailView;
 
 /**
  * Card Thumbnail model.
@@ -91,7 +92,7 @@ public class CardThumbnail extends BaseCard {
     /**
      * Placeholder
      */
-    protected int placeholderResourceId=0;
+    //protected int placeholderResourceId=0;
 
     /**
      * errorResourceId: image used if an error occurs while downloading file
@@ -114,6 +115,11 @@ public class CardThumbnail extends BaseCard {
     }
 
     protected CustomSource customSource = null;
+
+    /**
+     * Flag to send a broadcast after the bitmap is attached to imageView
+     */
+    protected boolean sendBroadcastAfterAttach = true;
 
     // -------------------------------------------------------------
     // Constructors
@@ -247,5 +253,35 @@ public class CardThumbnail extends BaseCard {
      */
     public void setErrorResource(int errorResourceId) {
         this.errorResourceId = errorResourceId;
+    }
+
+    /**
+     * Returns the flag which indicates to send a broadcast after the bitmap is attached
+     *
+     * @return
+     */
+    public boolean isSendBroadcastAfterAttach() {
+        return sendBroadcastAfterAttach;
+    }
+
+    /**
+     * Sets the flag to send a broadcast after the bitmap is attached
+     *
+     * @param sendBroadcastAfterAttach
+     */
+    public void setSendBroadcastAfterAttach(boolean sendBroadcastAfterAttach) {
+        this.sendBroadcastAfterAttach = sendBroadcastAfterAttach;
+    }
+
+    /**
+     * Return the CardThumbnailCardView
+     * @return
+     */
+    public CardThumbnailView getCardThumbnailView() {
+
+        if (getParentCard() != null)
+            return getParentCard().getCardView().getInternalThumbnailLayout();
+
+        return null;
     }
 }

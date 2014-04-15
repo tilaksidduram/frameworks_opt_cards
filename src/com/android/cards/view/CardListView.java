@@ -25,19 +25,18 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.android.cards.R;
 import com.android.cards.internal.Card;
 import com.android.cards.internal.CardArrayAdapter;
 import com.android.cards.internal.CardCursorAdapter;
+import com.android.cards.view.listener.SwipeOnScrollListener;
 
 /**
  * Card List View.
@@ -78,15 +77,16 @@ public class CardListView extends ListView implements CardView.OnExpandListAnima
      */
     protected CardCursorAdapter mCursorAdapter;
 
-    //--------------------------------------------------------------------------
-    // Fields for expand/collapse animation
-    //--------------------------------------------------------------------------
+    /**
+     * Custom ScrollListener to be used with a CardListView and cards with swipe action
+     */
+    protected SwipeOnScrollListener mOnScrollListener;
 
-    private boolean mShouldRemoveObserver = false;
+    /**
+     * Custom gesture listener to be used with a CardListView and cards with swipe action
+     */
+    protected ScaleGestureDetector mGestureDetector;
 
-    private List<View> mViewsToDraw = new ArrayList<View>();
-
-    private int[] mTranslate;
 
     //--------------------------------------------------------------------------
     // Custom Attrs
@@ -176,7 +176,7 @@ public class CardListView extends ListView implements CardView.OnExpandListAnima
         }else if (adapter instanceof CardCursorAdapter){
             setAdapter((CardCursorAdapter)adapter);
         }else {
-            Log.e(TAG,"You are using a generic adapter. Pay attention: your adapter has to call cardArrayAdapter#getView method" );
+            Log.w(TAG,"You are using a generic adapter. Pay attention: your adapter has to call cardArrayAdapter#getView method" );
             super.setAdapter(adapter);
         }
     }
@@ -243,6 +243,36 @@ public class CardListView extends ListView implements CardView.OnExpandListAnima
         mCursorAdapter.setRowLayoutId(list_card_layout_resourceID);
     }
 
+    /**
+     * Returns local scroll event listener
+     */
+    public OnScrollListener getOnScrollListener( ) {
+        return this.mOnScrollListener;
+    }
+
+    /**
+     * Overrides the set on scroll listener method and registers local reference
+     */
+    @Override
+    public void setOnScrollListener( OnScrollListener mOnScrollListener ) {
+        super.setOnScrollListener( mOnScrollListener );
+        if (mOnScrollListener instanceof SwipeOnScrollListener)
+            this.mOnScrollListener = (SwipeOnScrollListener)mOnScrollListener;
+    }
+
+    /**
+     * Set external custom gesture detector
+     */
+    public void setGestureDetector(ScaleGestureDetector gestureDetector) {
+        this.mGestureDetector = gestureDetector;
+    }
+
+    /**
+     * Get external custom gesture detector
+     */
+    public ScaleGestureDetector getGestureDetector() {
+        return this.mGestureDetector;
+    }
 
     //--------------------------------------------------------------------------
     // Expand and Collapse animator
@@ -250,12 +280,34 @@ public class CardListView extends ListView implements CardView.OnExpandListAnima
 
     @Override
     public void onExpandStart(CardView viewCard,View expandingLayout) {
-        ExpandCollapseHelper.animateExpanding(expandingLayout,viewCard,this);
+
+        boolean expandable = true;
+        if (mCursorAdapter!=null){
+            expandable = mCursorAdapter.onExpandStart(viewCard);
+        }
+
+        if (expandable)
+            ExpandCollapseHelper.animateExpanding(expandingLayout,viewCard,this);
+
+        if (mCursorAdapter!=null){
+            mCursorAdapter.onExpandEnd(viewCard);
+        }
+
     }
 
     @Override
     public void onCollapseStart(CardView viewCard,View expandingLayout) {
-        ExpandCollapseHelper.animateCollapsing(expandingLayout,viewCard,this);
+        boolean collapsible = true;
+        if (mCursorAdapter!=null){
+            collapsible = mCursorAdapter.onCollapseStart(viewCard);
+        }
+
+        if (collapsible)
+            ExpandCollapseHelper.animateCollapsing(expandingLayout,viewCard,this);
+
+        if (mCursorAdapter!=null){
+            mCursorAdapter.onCollapseEnd(viewCard);
+        }
     }
 
     /**
@@ -387,7 +439,7 @@ public class CardListView extends ListView implements CardView.OnExpandListAnima
                 if (cardListView.mAdapter!=null){
                     cardListView.mAdapter.notifyDataSetChanged();
                 } else if (cardListView.mCursorAdapter!=null){
-                    cardListView.mCursorAdapter.notifyDataSetChanged();
+                    //cardListView.mCursorAdapter.notifyDataSetChanged();
                 }
             }
         }

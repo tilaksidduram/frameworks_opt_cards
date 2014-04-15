@@ -24,6 +24,7 @@ import android.animation.ValueAnimator;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.android.cards.internal.Card;
+import com.android.cards.view.CardListView;
 
 /**
  * It is based on Roman Nurik code.
@@ -51,9 +53,10 @@ import com.android.cards.internal.Card;
  * handling list item clicks, etc.
  *
  * <p>After creating the listener, the caller should also call
- * {@link ListView#setOnScrollListener(AbsListView.OnScrollListener)}, passing
- * in the scroll listener returned by {@link #makeScrollListener()}. If a scroll listener is
- * already assigned, the caller should still pass scroll changes through to this listener. This will
+ * {@link ListView#setOnScrollListener(AbsListView.OnScrollListener)}, using a
+ * {@link it.gmariotti.cardslib.library.view.listener.SwipeOnScrollListener}.
+ *
+ * If a scroll listener is already assigned, the caller should still pass scroll changes through to this listener. This will
  * ensure that this {@link SwipeDismissListViewTouchListener} is paused during list view
  * scrolling.</p>
  *
@@ -105,6 +108,11 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
     private boolean mPaused;
 
     /**
+     * Custom gesture listener
+     */
+    protected ScaleGestureDetector mGestureDetector;
+
+    /**
      * The callback interface used by {@link SwipeDismissListViewTouchListener} to inform its client
      * about a successful dismissal of one or more list item positions.
      */
@@ -141,6 +149,9 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
                 android.R.integer.config_shortAnimTime);
         mListView = listView;
         mCallbacks = callbacks;
+        if (mListView instanceof CardListView) {
+            mGestureDetector = ((CardListView) mListView).getGestureDetector();
+        }
     }
 
     /**
@@ -161,6 +172,7 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
      *
      * @see SwipeDismissListViewTouchListener
      */
+    /*
     public AbsListView.OnScrollListener makeScrollListener() {
         return new AbsListView.OnScrollListener() {
             @Override
@@ -172,18 +184,25 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {
             }
         };
-    }
+    }*/
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (mViewWidth < 2) {
             mViewWidth = mListView.getWidth();
         }
+        if (mGestureDetector != null && !mSwiping) {
+            mGestureDetector.onTouchEvent(motionEvent);
+        }
 
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
                 if (mPaused) {
                     return false;
+                }
+
+                if (mSwiping){
+                    return true;
                 }
 
                 // TODO: ensure this is a finger, and set a flag
